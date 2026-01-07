@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AI Report View</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#4f46e5", // Indigo 600 - More professional than bright blue
+                        secondary: "#6366f1", // Indigo 500
+                        "background-light": "#f8fafc", // Slate 50
+                        "background-dark": "#0f172a", // Slate 900
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1e293b", // Slate 800
+                        "border-light": "#e2e8f0", // Slate 200
+                        "border-dark": "#334155", // Slate 700
+                    },
+                    fontFamily: {
+                        sans: ["Inter", "sans-serif"],
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.5rem",
+                    },
+                },
+            },
+        };
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .glass-panel {
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .dark ::-webkit-scrollbar-thumb { background: #475569; }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-200 min-h-screen flex flex-col transition-colors duration-200">
+<nav class="sticky top-0 z-50 border-b border-border-light dark:border-border-dark bg-surface-light/80 dark:bg-background-dark/80 glass-panel">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="flex items-center justify-between h-16">
+<div class="flex items-center gap-3">
+<div class="bg-primary/10 p-2 rounded-lg">
+<span class="material-symbols-outlined text-primary text-2xl">analytics</span>
+</div>
+<span class="font-bold text-lg tracking-tight text-slate-900 dark:text-white">AI Spreadsheet Agent</span>
+</div>
+<div class="hidden md:flex space-x-1">
+<a class="px-3 py-2 text-sm font-medium text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-md dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800 transition" href="#">Dashboard</a>
+<a class="px-3 py-2 text-sm font-medium text-primary bg-primary/5 rounded-md" href="#">Analysis</a>
+<a class="px-3 py-2 text-sm font-medium text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-md dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800 transition" href="#">Settings</a>
+</div>
+<div class="flex items-center gap-3">
+<button class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors" id="theme-toggle">
+<span class="material-symbols-outlined text-xl">dark_mode</span>
+</button>
+<div class="h-8 w-8 rounded-full bg-gradient-to-tr from-indigo-400 to-primary p-0.5">
+<img alt="User Profile" class="rounded-full bg-surface-dark h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuByBowPd2bAwrTDjFKjhs5CpcMLwN0K5wj3ktbgiZhKnF84jzBy4MP0SK1zZhDmwG8XOlR-9lwh0zI6ZGLStjyVR7Tw3hpUBvKBK6Wf0rv47qRAOHqXXPvnTUxE7gtDb3IN-RYxQCaq01d6EJHK6bFPV03oTyV2y8rDj6OSI9cPjqUSuJSsa4cK3klpaWhCwoi1TSWcMw9vS6-yhU6DHFU8v374ogFpYto0IW-9gAjldAB3giC--Uz9mwdXs2NG0I3qUtFwN-zVNyw4"/>
+</div>
+</div>
+</div>
+</div>
+</nav>
+<main class="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 pb-32">
+<header class="mb-8 border-b border-border-light dark:border-border-dark pb-8">
+<div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+<div class="flex-1 min-w-0">
+<nav aria-label="Breadcrumb" class="flex mb-3">
+<ol class="flex items-center space-x-2">
+<li><a class="text-slate-400 hover:text-slate-500 text-sm" href="#">Dashboard</a></li>
+<li><span class="text-slate-300 dark:text-slate-600">/</span></li>
+<li><a class="text-slate-400 hover:text-slate-500 text-sm" href="#">Reports</a></li>
+</ol>
+</nav>
+<h1 class="text-3xl font-bold text-slate-900 dark:text-white sm:truncate tracking-tight">Q3 2023 Revenue Performance</h1>
+<div class="mt-2 flex flex-col sm:flex-row sm:flex-wrap sm:space-x-6 gap-2 sm:gap-0">
+<div class="flex items-center text-sm text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined text-lg mr-1.5 text-slate-400">info</span>
+                        Comprehensive analysis of sales data, churn rates, and growth.
+                    </div>
+<div class="flex items-center text-sm text-slate-500 dark:text-slate-400">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
+                            Generated
+                        </span>
+</div>
+<div class="flex items-center text-sm text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined text-lg mr-1.5 text-slate-400">schedule</span>
+                         Last updated: 2 mins ago
+                    </div>
+</div>
+</div>
+<div class="flex lg:flex-col xl:flex-row gap-3 mt-4 lg:mt-0">
+<button class="inline-flex items-center justify-center px-4 py-2 border border-border-light dark:border-border-dark shadow-sm text-sm font-medium rounded-lg text-slate-700 dark:text-slate-200 bg-white dark:bg-surface-dark hover:bg-slate-50 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors">
+<span class="material-symbols-outlined text-xl mr-2 text-slate-500">edit_note</span>
+                    Edit Layout
+                </button>
+<button class="inline-flex items-center justify-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-primary hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors">
+<span class="material-symbols-outlined text-xl mr-2">ios_share</span>
+                    Export Report
+                </button>
+</div>
+</div>
+</header>
+<div class="space-y-8">
+<section class="group relative bg-white dark:bg-surface-dark rounded-xl border border-border-light dark:border-border-dark p-6 shadow-sm">
+<div class="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+<button class="p-1.5 text-slate-400 hover:text-primary hover:bg-indigo-50 dark:hover:bg-slate-700 rounded transition" title="Regenerate Text">
+<span class="material-symbols-outlined text-lg">autorenew</span>
+</button>
+<button class="p-1.5 text-slate-400 hover:text-primary hover:bg-indigo-50 dark:hover:bg-slate-700 rounded transition" title="Edit">
+<span class="material-symbols-outlined text-lg">edit</span>
+</button>
+</div>
+<h2 class="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+<span class="p-1 bg-indigo-50 dark:bg-indigo-900/20 rounded">
+<span class="material-symbols-outlined text-primary text-xl">summarize</span>
+</span>
+                Executive Summary
+            </h2>
+<div class="prose dark:prose-invert max-w-none text-slate-600 dark:text-slate-300 text-sm leading-relaxed border-l-4 border-indigo-100 dark:border-indigo-900 pl-4">
+<p>
+                    Overall revenue for Q3 2023 has shown a resilient upward trend despite initial market volatility in July. Total revenue reached <strong>$165,000</strong>, exceeding the projected $142,000 target by 16%. The primary driver for this growth was the enterprise segment, which saw a 22% increase in contract renewals. However, customer churn in the SMB sector remains a concern at 2.1%, slightly above the 1.9% threshold set for this quarter.
+                </p>
+</div>
+</section>
+<section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="bg-white dark:bg-surface-dark rounded-xl border border-border-light dark:border-border-dark p-6 shadow-sm hover:shadow-md transition-shadow duration-300">
+<div class="flex items-center justify-between mb-4">
+<span class="text-sm font-medium text-slate-500 dark:text-slate-400">Revenue Growth</span>
+<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400 border border-green-100 dark:border-green-800">
+                        High Confidence
+                    </span>
+</div>
+<div class="flex items-baseline gap-2">
+<h3 class="text-3xl font-bold text-slate-900 dark:text-white">+12.5%</h3>
+<span class="text-sm text-green-600 flex items-center">
+<span class="material-symbols-outlined text-base">trending_up</span>
+</span>
+</div>
+<p class="text-xs text-slate-500 dark:text-slate-400 mt-2">vs Q2 Actuals. Driven by enterprise expansion.</p>
+</div>
+<div class="bg-white dark:bg-surface-dark rounded-xl border border-border-light dark:border-border-dark p-6 shadow-sm hover:shadow-md transition-shadow duration-300">
+<div class="flex items-center justify-between mb-4">
+<span class="text-sm font-medium text-slate-500 dark:text-slate-400">SMB Churn Rate</span>
+<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400 border border-red-100 dark:border-red-800">
+                        Action Needed
+                    </span>
+</div>
+<div class="flex items-baseline gap-2">
+<h3 class="text-3xl font-bold text-slate-900 dark:text-white">2.1%</h3>
+<span class="text-sm text-red-500 flex items-center">
+<span class="material-symbols-outlined text-base">warning</span>
+</span>
+</div>
+<p class="text-xs text-slate-500 dark:text-slate-400 mt-2">Exceeds 1.9% target threshold.</p>
+</div>
+<div class="bg-white dark:bg-surface-dark rounded-xl border border-border-light dark:border-border-dark p-6 shadow-sm hover:shadow-md transition-shadow duration-300">
+<div class="flex items-center justify-between mb-4">
+<span class="text-sm font-medium text-slate-500 dark:text-slate-400">Q4 Projection</span>
+<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800">
+                        AI Forecast
+                    </span>
+</div>
+<div class="flex items-baseline gap-2">
+<h3 class="text-3xl font-bold text-slate-900 dark:text-white">$185k</h3>
+<span class="text-sm text-indigo-500 flex items-center">
+<span class="material-symbols-outlined text-base">psychology</span>
+</span>
+</div>
+<p class="text-xs text-slate-500 dark:text-slate-400 mt-2">Predicted based on seasonal trends.</p>
+</div>
+</section>
+<section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+<div class="bg-white dark:bg-surface-dark rounded-xl border border-border-light dark:border-border-dark p-6 shadow-sm flex flex-col h-96">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                        Revenue vs Projection
+                    </h3>
+<button class="text-slate-400 hover:text-primary transition">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<div class="flex-grow flex items-end justify-between gap-4 px-2 pb-2 relative">
+<div class="absolute inset-0 flex flex-col justify-between pointer-events-none z-0">
+<div class="border-t border-slate-100 dark:border-slate-700/50 w-full h-0"></div>
+<div class="border-t border-slate-100 dark:border-slate-700/50 w-full h-0"></div>
+<div class="border-t border-slate-100 dark:border-slate-700/50 w-full h-0"></div>
+<div class="border-t border-slate-100 dark:border-slate-700/50 w-full h-0"></div>
+</div>
+<div class="w-1/4 relative group flex flex-col justify-end h-full z-10">
+<div class="w-full bg-indigo-100 dark:bg-indigo-900/30 rounded-t h-[40%] relative hover:bg-indigo-200 transition-colors">
+<div class="absolute bottom-0 w-full bg-primary rounded-t h-[80%]"></div>
+</div>
+</div>
+<div class="w-1/4 relative group flex flex-col justify-end h-full z-10">
+<div class="w-full bg-indigo-100 dark:bg-indigo-900/30 rounded-t h-[55%] relative hover:bg-indigo-200 transition-colors">
+<div class="absolute bottom-0 w-full bg-primary rounded-t h-[90%]"></div>
+</div>
+</div>
+<div class="w-1/4 relative group flex flex-col justify-end h-full z-10">
+<div class="w-full bg-indigo-100 dark:bg-indigo-900/30 rounded-t h-[70%] relative hover:bg-indigo-200 transition-colors">
+<div class="absolute bottom-0 w-full bg-primary rounded-t h-[85%]"></div>
+</div>
+</div>
+<div class="w-1/4 relative group flex flex-col justify-end h-full z-10">
+<div class="w-full h-[90%] relative">
+<div class="w-full h-full border-2 border-dashed border-indigo-400/50 bg-indigo-50/50 dark:bg-indigo-900/10 rounded-t flex items-center justify-center">
+<span class="text-[10px] text-indigo-500 font-medium">Proj.</span>
+</div>
+</div>
+</div>
+</div>
+<div class="flex justify-between text-xs font-medium text-slate-400 mt-4 px-2">
+<span class="w-1/4 text-center">Q1</span>
+<span class="w-1/4 text-center">Q2</span>
+<span class="w-1/4 text-center">Q3</span>
+<span class="w-1/4 text-center">Q4</span>
+</div>
+</div>
+<div class="bg-white dark:bg-surface-dark rounded-xl border border-border-light dark:border-border-dark shadow-sm relative overflow-hidden flex flex-col h-96">
+<div class="p-6 pb-0 flex justify-between items-center z-10">
+<div class="flex items-center gap-2">
+<h3 class="font-semibold text-slate-900 dark:text-white">Churn Analysis Model</h3>
+<span class="px-2 py-0.5 rounded text-[10px] font-bold tracking-wide bg-orange-50 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400 border border-orange-100 dark:border-orange-900/50">STALE DATA</span>
+</div>
+<button class="text-slate-400 hover:text-white"><span class="material-symbols-outlined">more_vert</span></button>
+</div>
+<div class="absolute inset-0 pt-20 px-8 flex items-end justify-between gap-6 opacity-20 filter blur-[2px]">
+<div class="w-full bg-slate-300 dark:bg-slate-700 h-[30%] rounded-t"></div>
+<div class="w-full bg-slate-300 dark:bg-slate-700 h-[50%] rounded-t"></div>
+<div class="w-full bg-slate-300 dark:bg-slate-700 h-[40%] rounded-t"></div>
+<div class="w-full bg-slate-300 dark:bg-slate-700 h-[60%] rounded-t"></div>
+</div>
+<div class="absolute inset-0 z-20 flex flex-col items-center justify-center bg-white/40 dark:bg-background-dark/50 backdrop-blur-sm">
+<div class="bg-surface-light dark:bg-[#151e32] border border-border-light dark:border-slate-700 rounded-xl p-8 max-w-sm text-center shadow-xl ring-1 ring-black/5">
+<div class="mx-auto mb-4 w-12 h-12 rounded-full bg-orange-50 dark:bg-orange-900/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-orange-500 text-2xl">sync_problem</span>
+</div>
+<h4 class="text-slate-900 dark:text-white font-semibold mb-2">Chart data is outdated</h4>
+<p class="text-sm text-slate-500 dark:text-slate-400 mb-6 leading-relaxed">The underlying values in Sheet1 have changed. Regenerate to view the latest analysis.</p>
+<button class="w-full py-2.5 px-4 bg-primary hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-lg">refresh</span>
+                            Regenerate Chart
+                        </button>
+</div>
+</div>
+</div>
+</section>
+<section class="bg-white dark:bg-surface-dark rounded-xl border border-border-light dark:border-border-dark shadow-sm overflow-hidden">
+<div class="p-6 border-b border-border-light dark:border-border-dark flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/30">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-slate-400">table_chart</span>
+<h2 class="text-lg font-semibold text-slate-900 dark:text-white">Source Data</h2>
+</div>
+<button class="text-primary text-sm font-medium hover:text-indigo-700 flex items-center gap-1 transition-colors">
+                    View Full Sheet
+                    <span class="material-symbols-outlined text-base">open_in_new</span>
+</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-sm text-left">
+<thead class="text-xs text-slate-500 dark:text-slate-400 uppercase bg-slate-50 dark:bg-slate-800/80 border-b border-border-light dark:border-border-dark">
+<tr>
+<th class="px-6 py-4 font-semibold" scope="col">Metric</th>
+<th class="px-6 py-4 font-semibold text-right" scope="col">Q1 Actual</th>
+<th class="px-6 py-4 font-semibold text-right" scope="col">Q2 Actual</th>
+<th class="px-6 py-4 font-semibold text-right" scope="col">Q3 Actual</th>
+<th class="px-6 py-4 font-semibold text-right text-primary" scope="col">Q4 Projection</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-border-light dark:divide-border-dark">
+<tr class="bg-white dark:bg-surface-dark hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+<td class="px-6 py-4 font-medium text-slate-900 dark:text-slate-200">Revenue</td>
+<td class="px-6 py-4 text-right text-slate-600 dark:text-slate-400">$120,000</td>
+<td class="px-6 py-4 text-right text-slate-600 dark:text-slate-400">$135,000</td>
+<td class="px-6 py-4 text-right text-slate-600 dark:text-slate-400">$142,000</td>
+<td class="px-6 py-4 text-right font-medium text-slate-900 dark:text-white bg-indigo-50/50 dark:bg-indigo-900/10 relative group cursor-help">
+                                $165,000
+                                <span class="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-indigo-500 rounded-full"></span>
+</td>
+</tr>
+<tr class="bg-white dark:bg-surface-dark hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+<td class="px-6 py-4 font-medium text-slate-900 dark:text-slate-200">Growth %</td>
+<td class="px-6 py-4 text-right text-slate-600 dark:text-slate-400 text-opacity-50">--</td>
+<td class="px-6 py-4 text-right text-slate-600 dark:text-slate-400">12.5%</td>
+<td class="px-6 py-4 text-right text-slate-600 dark:text-slate-400">5.2%</td>
+<td class="px-6 py-4 text-right font-medium text-slate-900 dark:text-white bg-indigo-50/50 dark:bg-indigo-900/10">8.5%</td>
+</tr>
+<tr class="bg-white dark:bg-surface-dark hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+<td class="px-6 py-4 font-medium text-slate-900 dark:text-slate-200">Churn Rate</td>
+<td class="px-6 py-4 text-right text-slate-600 dark:text-slate-400">2.1%</td>
+<td class="px-6 py-4 text-right text-slate-600 dark:text-slate-400">1.9%</td>
+<td class="px-6 py-4 text-right text-slate-600 dark:text-slate-400">2.0%</td>
+<td class="px-6 py-4 text-right font-medium text-red-500 bg-red-50/50 dark:bg-red-900/10 relative">
+                                #ERROR
+                                <span class="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<div class="flex items-center justify-center py-6">
+<button class="group flex flex-col items-center gap-2 px-6 py-6 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-primary hover:bg-indigo-50/50 dark:hover:bg-indigo-900/10 transition-all duration-300 w-full max-w-lg">
+<div class="p-2.5 rounded-full bg-slate-100 dark:bg-slate-800 group-hover:bg-primary group-hover:text-white transition-colors duration-300">
+<span class="material-symbols-outlined text-slate-400 group-hover:text-white">add</span>
+</div>
+<span class="text-sm font-medium text-slate-500 dark:text-slate-400 group-hover:text-primary transition-colors">Add Section (Text, Chart, or Table)</span>
+</button>
+</div>
+</div>
+</main>
+<div class="fixed bottom-0 left-0 right-0 z-40 bg-gradient-to-t from-white dark:from-[#0f172a] via-white/80 dark:via-[#0f172a]/80 to-transparent pt-12 pb-6 px-4">
+<div class="max-w-3xl mx-auto">
+<div class="relative group">
+<div class="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl opacity-30 group-hover:opacity-60 blur transition duration-500"></div>
+<div class="relative flex items-center bg-white dark:bg-[#1e293b] rounded-xl shadow-2xl overflow-hidden border border-border-light dark:border-slate-700">
+<div class="pl-4 pr-3 text-primary">
+<span class="material-symbols-outlined text-xl animate-pulse">colors_spark</span>
+</div>
+<input class="w-full py-4 px-1 bg-transparent border-none focus:ring-0 text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 text-sm" placeholder="Ask AI to analyze specific trends or edit the layout..." type="text"/>
+<div class="pr-2">
+<button class="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-primary hover:text-white text-slate-500 dark:text-slate-400 transition-colors">
+<span class="material-symbols-outlined text-lg">arrow_upward</span>
+</button>
+</div>
+</div>
+<div class="flex justify-between items-center px-2 mt-2">
+<div class="text-[10px] text-slate-400 flex items-center gap-1">
+<span class="w-1 h-1 rounded-full bg-slate-400"></span>
+                    Press ↵ to run
+                </div>
+<div class="text-[10px] text-indigo-500/80 font-medium">GPT-4 Model</div>
+</div>
+</div>
+</div>
+</div>
+<script>
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    const themeIcon = themeToggleBtn.querySelector('span');
+    // Check local storage or system preference
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+        themeIcon.textContent = 'light_mode';
+    } else {
+        document.documentElement.classList.remove('dark');
+        themeIcon.textContent = 'dark_mode';
+    }
+    themeToggleBtn.addEventListener('click', () => {
+        if (document.documentElement.classList.contains('dark')) {
+            document.documentElement.classList.remove('dark');
+            localStorage.theme = 'light';
+            themeIcon.textContent = 'dark_mode';
+        } else {
+            document.documentElement.classList.add('dark');
+            localStorage.theme = 'dark';
+            themeIcon.textContent = 'light_mode';
+        }
+    });
+</script>
+
+</body></html>

@@ -1,0 +1,628 @@
+{
+    "meta": {
+        "title": "AI Spreadsheet Studio - Mobile API Specification",
+        "version": "1.1.0",
+        "updated_at": "2026-01-01",
+        "description": "Đặc tả kỹ thuật cho ứng dụng mobile AI Spreadsheet"
+    },
+    "app": {
+        "name": "AI Spreadsheet Studio",
+        "version": "1.1.0",
+        "description": "Ứng dụng bảng tính thông minh điều khiển bằng ngôn ngữ tự nhiên",
+        "platforms": [
+            "iOS",
+            "Android"
+        ],
+        "min_sdk": {
+            "ios": "14.0",
+            "android": 26
+        },
+        "features_summary": [
+            "Spreadsheet với AI command",
+            "Tạo cột computed bằng formula",
+            "Thêm/xóa hàng và cột",
+            "Aggregate functions (SUM, AVG, etc)",
+            "Chart với Pivot Mode",
+            "Export CSV"
+        ]
+    },
+    "api": {
+        "base_url": "https://api.example.com",
+        "version": "v1",
+        "timeout_ms": 30000,
+        "retry_count": 3,
+        "headers": {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        }
+    },
+    "endpoints": [
+        {
+            "name": "interpret",
+            "method": "POST",
+            "path": "/api/v1/interpret",
+            "description": "Chuyển đổi lệnh ngôn ngữ tự nhiên thành Intent (dùng Gemini API)",
+            "note": "Khi Gemini unavailable, sẽ dùng fallback regex parser",
+            "request": {
+                "command": {
+                    "type": "string",
+                    "required": true,
+                    "description": "Lệnh NL từ người dùng",
+                    "examples": [
+                        "Profit = [Revenue] - [Cost]",
+                        "Sum of Q1",
+                        "Thêm hàng",
+                        "Xóa hàng 2",
+                        "Sort by Revenue desc"
+                    ]
+                },
+                "columns": {
+                    "type": "array",
+                    "required": true,
+                    "items": "$ref:ColumnDef",
+                    "description": "Danh sách columns hiện tại để context"
+                }
+            },
+            "response": {
+                "success": {
+                    "type": "boolean"
+                },
+                "intent": {
+                    "type": "$ref:Intent",
+                    "nullable": true
+                },
+                "error": {
+                    "type": "string",
+                    "nullable": true
+                }
+            }
+        },
+        {
+            "name": "execute",
+            "method": "POST",
+            "path": "/api/v1/execute",
+            "description": "Thực thi Intent trên dữ liệu spreadsheet",
+            "request": {
+                "intent": {
+                    "type": "$ref:Intent",
+                    "required": true
+                },
+                "columns": {
+                    "type": "array",
+                    "items": "$ref:ColumnDef",
+                    "required": true
+                },
+                "data": {
+                    "type": "array",
+                    "items": "$ref:RowData",
+                    "required": true
+                },
+                "current_data_hash": {
+                    "type": "string",
+                    "required": false
+                }
+            },
+            "response": {
+                "success": {
+                    "type": "boolean"
+                },
+                "updated_data": {
+                    "type": "array",
+                    "items": "$ref:RowData",
+                    "nullable": true
+                },
+                "updated_columns": {
+                    "type": "array",
+                    "items": "$ref:ColumnDef",
+                    "nullable": true
+                },
+                "new_data_hash": {
+                    "type": "string",
+                    "nullable": true
+                },
+                "aggregate_result": {
+                    "type": "number",
+                    "nullable": true,
+                    "description": "Kết quả SUM/AVG/etc"
+                },
+                "error": {
+                    "type": "string",
+                    "nullable": true
+                }
+            }
+        },
+        {
+            "name": "validate",
+            "method": "POST",
+            "path": "/api/v1/validate",
+            "description": "Kiểm tra cú pháp Intent mà không thực thi",
+            "request": {
+                "intent": {
+                    "type": "$ref:Intent",
+                    "required": true
+                },
+                "columns": {
+                    "type": "array",
+                    "items": "$ref:ColumnDef",
+                    "required": true
+                }
+            },
+            "response": {
+                "valid": {
+                    "type": "boolean"
+                },
+                "errors": {
+                    "type": "array",
+                    "items": "string"
+                },
+                "warnings": {
+                    "type": "array",
+                    "items": "string"
+                }
+            }
+        },
+        {
+            "name": "functions",
+            "method": "GET",
+            "path": "/api/v1/functions",
+            "description": "Lấy danh sách hàm aggregate được hỗ trợ",
+            "response": {
+                "functions": [
+                    {
+                        "name": "SUM",
+                        "description": "Tổng các giá trị"
+                    },
+                    {
+                        "name": "AVG",
+                        "description": "Trung bình"
+                    },
+                    {
+                        "name": "COUNT",
+                        "description": "Đếm số hàng"
+                    },
+                    {
+                        "name": "MIN",
+                        "description": "Giá trị nhỏ nhất"
+                    },
+                    {
+                        "name": "MAX",
+                        "description": "Giá trị lớn nhất"
+                    },
+                    {
+                        "name": "VARIANCE",
+                        "description": "Phương sai"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "health",
+            "method": "GET",
+            "path": "/health",
+            "description": "Health check endpoint",
+            "response": {
+                "status": {
+                    "type": "string",
+                    "enum": [
+                        "healthy",
+                        "unhealthy"
+                    ]
+                },
+                "version": {
+                    "type": "string"
+                }
+            }
+        }
+    ],
+    "models": {
+        "ColumnDef": {
+            "description": "Định nghĩa một cột trong spreadsheet",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique identifier",
+                    "example": "revenue_123"
+                },
+                "label": {
+                    "type": "string",
+                    "description": "Tên hiển thị",
+                    "example": "Revenue"
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "number",
+                        "string",
+                        "currency",
+                        "percent"
+                    ],
+                    "default": "number"
+                },
+                "is_computed": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "true nếu cột có formula"
+                },
+                "formula": {
+                    "type": "string",
+                    "nullable": true,
+                    "example": "[Q1] + [Q2]"
+                }
+            }
+        },
+        "RowData": {
+            "description": "Một hàng dữ liệu",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique row identifier"
+                }
+            },
+            "additionalProperties": {
+                "type": "any",
+                "description": "Dynamic column values keyed by column_id"
+            }
+        },
+        "Intent": {
+            "description": "Lệnh đã được parse từ ngôn ngữ tự nhiên",
+            "properties": {
+                "action": {
+                    "type": "string",
+                    "enum": [
+                        "CREATE_COLUMN",
+                        "UPDATE_COLUMN",
+                        "DELETE_COLUMN",
+                        "ADD_ROW",
+                        "DELETE_ROW",
+                        "AGGREGATE",
+                        "FILTER",
+                        "SORT"
+                    ]
+                },
+                "payload": {
+                    "type": "object",
+                    "description": "Action-specific parameters"
+                }
+            }
+        }
+    },
+    "payloads": {
+        "CREATE_COLUMN": {
+            "column_name": {
+                "type": "string",
+                "required": true
+            },
+            "formula": {
+                "type": "string",
+                "required": true,
+                "example": "[Revenue] - [Cost]"
+            },
+            "type": {
+                "type": "string",
+                "default": "number"
+            }
+        },
+        "UPDATE_COLUMN": {
+            "column_id": {
+                "type": "string",
+                "required": true
+            },
+            "formula": {
+                "type": "string",
+                "required": true
+            }
+        },
+        "DELETE_COLUMN": {
+            "column_id": {
+                "type": "string",
+                "required": true
+            }
+        },
+        "ADD_ROW": {
+            "values": {
+                "type": "object",
+                "required": false,
+                "description": "Initial values for new row"
+            }
+        },
+        "DELETE_ROW": {
+            "row_index": {
+                "type": "integer",
+                "required": true,
+                "description": "1-indexed row number"
+            }
+        },
+        "AGGREGATE": {
+            "function": {
+                "type": "string",
+                "enum": [
+                    "SUM",
+                    "AVG",
+                    "COUNT",
+                    "MIN",
+                    "MAX",
+                    "VARIANCE"
+                ],
+                "required": true
+            },
+            "column_id": {
+                "type": "string",
+                "required": true
+            }
+        },
+        "FILTER": {
+            "column_id": {
+                "type": "string",
+                "required": true
+            },
+            "operator": {
+                "type": "string",
+                "enum": [
+                    "==",
+                    "!=",
+                    ">",
+                    "<",
+                    ">=",
+                    "<=",
+                    "contains"
+                ],
+                "required": true
+            },
+            "value": {
+                "type": "any",
+                "required": true
+            }
+        },
+        "SORT": {
+            "column_id": {
+                "type": "string",
+                "required": true
+            },
+            "order": {
+                "type": "string",
+                "enum": [
+                    "asc",
+                    "desc"
+                ],
+                "default": "asc"
+            }
+        }
+    },
+    "formula_syntax": {
+        "operators": [
+            {
+                "symbol": "+",
+                "name": "Addition",
+                "priority": 1
+            },
+            {
+                "symbol": "-",
+                "name": "Subtraction",
+                "priority": 1
+            },
+            {
+                "symbol": "*",
+                "name": "Multiplication",
+                "priority": 2
+            },
+            {
+                "symbol": "/",
+                "name": "Division",
+                "priority": 2
+            },
+            {
+                "symbol": "^",
+                "name": "Power",
+                "priority": 3
+            }
+        ],
+        "column_reference": {
+            "format": "[Column Label]",
+            "case_sensitive": false,
+            "examples": [
+                "[Revenue]",
+                "[Q1]",
+                "[Lợi Nhuận]"
+            ]
+        }
+    },
+    "supported_commands": {
+        "fallback_patterns": {
+            "description": "Các pattern được xử lý bởi fallback parser khi Gemini unavailable",
+            "vietnamese": [
+                {
+                    "pattern": "X = [A] + [B]",
+                    "action": "CREATE_COLUMN",
+                    "example": "Profit = [Revenue] - [Cost]"
+                },
+                {
+                    "pattern": "Thêm hàng",
+                    "action": "ADD_ROW"
+                },
+                {
+                    "pattern": "Xóa hàng N",
+                    "action": "DELETE_ROW",
+                    "example": "Xóa hàng 2"
+                },
+                {
+                    "pattern": "Xóa cột X",
+                    "action": "DELETE_COLUMN",
+                    "example": "Xóa cột Q1"
+                },
+                {
+                    "pattern": "Tổng/Sum of X",
+                    "action": "AGGREGATE",
+                    "example": "Tổng Q1"
+                },
+                {
+                    "pattern": "Sắp xếp theo X",
+                    "action": "SORT",
+                    "example": "Sắp xếp theo Revenue desc"
+                }
+            ],
+            "english": [
+                {
+                    "pattern": "X = [A] + [B]",
+                    "action": "CREATE_COLUMN"
+                },
+                {
+                    "pattern": "Add row",
+                    "action": "ADD_ROW"
+                },
+                {
+                    "pattern": "Delete row N",
+                    "action": "DELETE_ROW"
+                },
+                {
+                    "pattern": "Delete column X",
+                    "action": "DELETE_COLUMN"
+                },
+                {
+                    "pattern": "Sum/Avg/Count of X",
+                    "action": "AGGREGATE"
+                },
+                {
+                    "pattern": "Sort by X desc",
+                    "action": "SORT"
+                }
+            ]
+        },
+        "gemini_patterns": {
+            "description": "Các pattern phức tạp cần Gemini API xử lý",
+            "examples": [
+                "tạo cột lợi nhuận bằng doanh thu trừ chi phí",
+                "tính tổng cột doanh thu của tháng 1",
+                "lọc các hàng có giá trị lớn hơn 1000"
+            ]
+        }
+    },
+    "error_codes": {
+        "PARSE_ERROR": "Không hiểu lệnh",
+        "COLUMN_NOT_FOUND": "Không tìm thấy cột",
+        "ROW_NOT_FOUND": "Không tìm thấy hàng",
+        "FORMULA_ERROR": "Lỗi công thức",
+        "AI_UNAVAILABLE": "AI service không khả dụng",
+        "RATE_LIMITED": "Vượt quá giới hạn request"
+    },
+    "mobile_ui_components": {
+        "toolbar": {
+            "buttons": [
+                {
+                    "id": "upload",
+                    "icon": "upload_file",
+                    "action": "open_file_picker"
+                },
+                {
+                    "id": "add_row",
+                    "icon": "add",
+                    "label": "Add Row",
+                    "action": "execute_command",
+                    "command": "Thêm hàng"
+                },
+                {
+                    "id": "add_column",
+                    "icon": "view_column",
+                    "label": "Add Column",
+                    "action": "prompt_column_name"
+                },
+                {
+                    "id": "undo",
+                    "icon": "undo",
+                    "action": "undo_last"
+                }
+            ]
+        },
+        "spreadsheet_view": {
+            "type": "grid",
+            "features": [
+                "horizontal_scroll",
+                "vertical_scroll",
+                "cell_tap_to_edit",
+                "pinch_to_zoom",
+                "column_resize",
+                "computed_column_highlight"
+            ],
+            "gestures": {
+                "tap": "Select cell",
+                "double_tap": "Edit cell",
+                "long_press": "Show context menu (delete row/column)",
+                "swipe_left": "Delete row",
+                "pinch": "Zoom in/out"
+            }
+        },
+        "ai_input": {
+            "type": "text_field",
+            "features": [
+                "voice_input",
+                "autocomplete",
+                "command_history"
+            ],
+            "placeholder": "Nhập lệnh, ví dụ: Total = [Q1] + [Q2]"
+        },
+        "chart_view": {
+            "types": [
+                "bar",
+                "line",
+                "area"
+            ],
+            "features": {
+                "axis_selection": true,
+                "pivot_mode": {
+                    "description": "Cho phép dùng columns (Q1, Q2, Q3) làm trục X thay vì rows",
+                    "enabled": true
+                },
+                "statistics": [
+                    "sum",
+                    "average"
+                ]
+            },
+            "interactive": true,
+            "export_formats": [
+                "png",
+                "pdf"
+            ]
+        }
+    },
+    "offline_support": {
+        "enabled": true,
+        "cache_strategy": "cache_first",
+        "sync_interval_ms": 30000,
+        "local_storage": {
+            "type": "sqlite",
+            "max_size_mb": 50
+        },
+        "fallback_parser": {
+            "description": "Khi offline, vẫn có thể dùng fallback parser cho các lệnh cơ bản",
+            "supported_actions": [
+                "CREATE_COLUMN",
+                "ADD_ROW",
+                "DELETE_ROW",
+                "AGGREGATE",
+                "SORT"
+            ]
+        }
+    },
+    "security": {
+        "api_key_header": "X-API-Key",
+        "ssl_pinning": true,
+        "data_encryption": {
+            "at_rest": "AES-256",
+            "in_transit": "TLS 1.3"
+        }
+    },
+    "ai_integration": {
+        "provider": "Google Gemini",
+        "model": "gemini-2.0-flash",
+        "role": "NL Interpreter (phiên dịch ngôn ngữ tự nhiên → Intent JSON)",
+        "rate_limits": {
+            "free_tier": {
+                "requests_per_minute": "15-60",
+                "requests_per_day": "~1500"
+            }
+        },
+        "fallback": {
+            "type": "regex_parser",
+            "description": "Dùng khi Gemini unavailable hoặc rate limited"
+        }
+    }
+}

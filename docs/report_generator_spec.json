@@ -1,0 +1,340 @@
+{
+    "feature_name": "Auto Report Generator",
+    "version": "1.0.0",
+    "description": "Tự động tạo báo cáo phân tích dữ liệu từ spreadsheet với biểu đồ và nội dung có thể chỉnh sửa",
+    "trigger_commands": [
+        "Sinh báo cáo",
+        "Tạo báo cáo",
+        "Làm báo cáo",
+        "Generate report",
+        "Create report"
+    ],
+    "api_endpoints": {
+        "generate_report": {
+            "method": "POST",
+            "path": "/api/v1/report/generate",
+            "description": "Generate report từ spreadsheet data",
+            "request": {
+                "session_id": "string - Session ID hiện tại",
+                "columns": "ColumnDef[] - Danh sách cột",
+                "data": "object[] - Dữ liệu spreadsheet",
+                "options": {
+                    "title": "string? - Tiêu đề báo cáo (optional, AI tự đặt nếu không có)",
+                    "include_charts": "boolean - Có tạo biểu đồ không (default: true)",
+                    "chart_types": "string[]? - Loại biểu đồ mong muốn ['bar', 'line', 'pie', 'area']",
+                    "language": "string - Ngôn ngữ báo cáo: 'vi' | 'en' (default: 'vi')",
+                    "focus_columns": "string[]? - Các cột cần tập trung phân tích"
+                }
+            },
+            "response": {
+                "success": "boolean",
+                "report": "ReportData - Dữ liệu báo cáo đã tạo",
+                "error": "string? - Lỗi nếu có"
+            }
+        },
+        "update_report_section": {
+            "method": "PATCH",
+            "path": "/api/v1/report/{report_id}/section/{section_id}",
+            "description": "Cập nhật một section trong báo cáo",
+            "request": {
+                "content": "string | ChartConfig - Nội dung mới"
+            },
+            "response": {
+                "success": "boolean",
+                "updated_section": "ReportSection"
+            }
+        },
+        "export_report": {
+            "method": "POST",
+            "path": "/api/v1/report/{report_id}/export",
+            "description": "Xuất báo cáo ra file",
+            "request": {
+                "format": "string - 'pdf' | 'docx' | 'html' | 'md'"
+            },
+            "response": {
+                "success": "boolean",
+                "download_url": "string - URL tải file",
+                "filename": "string"
+            }
+        },
+        "regenerate_section": {
+            "method": "POST",
+            "path": "/api/v1/report/{report_id}/section/{section_id}/regenerate",
+            "description": "Yêu cầu AI tạo lại một section",
+            "request": {
+                "prompt": "string? - Hướng dẫn bổ sung cho AI"
+            },
+            "response": {
+                "success": "boolean",
+                "updated_section": "ReportSection"
+            }
+        }
+    },
+    "data_models": {
+        "ReportData": {
+            "id": "string - UUID của báo cáo",
+            "title": "string - Tiêu đề báo cáo",
+            "created_at": "string - ISO timestamp",
+            "updated_at": "string - ISO timestamp",
+            "summary": "string - Tóm tắt ngắn gọn (1-2 câu)",
+            "sections": "ReportSection[] - Các phần của báo cáo",
+            "metadata": {
+                "source_columns": "string[] - Các cột đã phân tích",
+                "row_count": "number - Số hàng dữ liệu",
+                "generation_time_ms": "number - Thời gian tạo"
+            }
+        },
+        "ReportSection": {
+            "id": "string - UUID của section",
+            "type": "string - 'header' | 'summary' | 'insight' | 'chart' | 'table' | 'conclusion' | 'custom'",
+            "order": "number - Thứ tự hiển thị",
+            "title": "string - Tiêu đề section",
+            "content": "string | ChartConfig | TableConfig - Nội dung",
+            "editable": "boolean - Có thể chỉnh sửa trực tiếp",
+            "regenerable": "boolean - Có thể yêu cầu AI tạo lại"
+        },
+        "ChartConfig": {
+            "chart_type": "string - 'bar' | 'line' | 'pie' | 'area' | 'scatter' | 'donut'",
+            "title": "string - Tiêu đề biểu đồ",
+            "x_axis": {
+                "column_id": "string - ID cột cho trục X",
+                "label": "string - Label hiển thị"
+            },
+            "y_axis": {
+                "column_id": "string - ID cột cho trục Y",
+                "label": "string - Label hiển thị"
+            },
+            "series": [
+                {
+                    "name": "string - Tên series",
+                    "column_id": "string - ID cột dữ liệu",
+                    "color": "string? - Màu hex (optional)"
+                }
+            ],
+            "show_legend": "boolean",
+            "show_labels": "boolean"
+        },
+        "TableConfig": {
+            "columns": "string[] - Các cột hiển thị",
+            "data": "object[] - Dữ liệu bảng",
+            "highlight_rules": [
+                {
+                    "column_id": "string",
+                    "condition": "string - 'max' | 'min' | 'above_avg' | 'below_avg'",
+                    "color": "string - Màu highlight"
+                }
+            ]
+        }
+    },
+    "ui_components": {
+        "ReportView": {
+            "description": "Component hiển thị và chỉnh sửa báo cáo",
+            "states": {
+                "loading": "Đang tạo báo cáo (hiện skeleton + progress)",
+                "ready": "Báo cáo đã tạo xong, có thể xem/sửa",
+                "editing": "Đang chỉnh sửa một section",
+                "exporting": "Đang xuất file"
+            },
+            "actions": [
+                "view_report",
+                "edit_section",
+                "regenerate_section",
+                "add_section",
+                "delete_section",
+                "reorder_sections",
+                "export_report"
+            ]
+        },
+        "SectionEditor": {
+            "description": "Component chỉnh sửa một section",
+            "for_text_sections": {
+                "type": "RichTextEditor",
+                "features": [
+                    "bold",
+                    "italic",
+                    "lists",
+                    "headings"
+                ]
+            },
+            "for_chart_sections": {
+                "type": "ChartConfigurator",
+                "features": [
+                    "change_type",
+                    "select_columns",
+                    "customize_colors",
+                    "toggle_legend"
+                ]
+            }
+        },
+        "ExportModal": {
+            "description": "Modal chọn định dạng xuất file",
+            "options": [
+                {
+                    "format": "pdf",
+                    "label": "PDF Document",
+                    "icon": "picture_as_pdf"
+                },
+                {
+                    "format": "docx",
+                    "label": "Word Document",
+                    "icon": "description"
+                },
+                {
+                    "format": "html",
+                    "label": "Web Page",
+                    "icon": "html"
+                },
+                {
+                    "format": "md",
+                    "label": "Markdown",
+                    "icon": "code"
+                }
+            ]
+        }
+    },
+    "report_templates": {
+        "default": {
+            "sections": [
+                {
+                    "type": "header",
+                    "auto_content": "Tiêu đề + thời gian tạo"
+                },
+                {
+                    "type": "summary",
+                    "auto_content": "AI tóm tắt dữ liệu trong 2-3 câu"
+                },
+                {
+                    "type": "insight",
+                    "auto_content": "3-5 insights chính từ dữ liệu"
+                },
+                {
+                    "type": "chart",
+                    "auto_content": "Biểu đồ cột cho metrics chính"
+                },
+                {
+                    "type": "chart",
+                    "auto_content": "Biểu đồ trend nếu có time series"
+                },
+                {
+                    "type": "table",
+                    "auto_content": "Bảng tóm tắt với highlights"
+                },
+                {
+                    "type": "conclusion",
+                    "auto_content": "Kết luận và đề xuất"
+                }
+            ]
+        },
+        "sales_report": {
+            "trigger_keywords": [
+                "doanh thu",
+                "bán hàng",
+                "sales",
+                "revenue"
+            ],
+            "sections": [
+                {
+                    "type": "header"
+                },
+                {
+                    "type": "summary",
+                    "focus": "sales metrics"
+                },
+                {
+                    "type": "chart",
+                    "chart_type": "bar",
+                    "title": "Doanh thu theo sản phẩm"
+                },
+                {
+                    "type": "chart",
+                    "chart_type": "pie",
+                    "title": "Tỷ trọng doanh thu"
+                },
+                {
+                    "type": "insight",
+                    "focus": "top/bottom performers"
+                },
+                {
+                    "type": "table",
+                    "highlight": [
+                        "max",
+                        "min"
+                    ]
+                },
+                {
+                    "type": "conclusion"
+                }
+            ]
+        },
+        "comparison_report": {
+            "trigger_keywords": [
+                "so sánh",
+                "compare",
+                "đối chiếu"
+            ],
+            "sections": [
+                {
+                    "type": "header"
+                },
+                {
+                    "type": "summary"
+                },
+                {
+                    "type": "chart",
+                    "chart_type": "bar",
+                    "grouped": true
+                },
+                {
+                    "type": "insight",
+                    "focus": "differences"
+                },
+                {
+                    "type": "table",
+                    "show_diff": true
+                },
+                {
+                    "type": "conclusion"
+                }
+            ]
+        }
+    },
+    "ai_prompts": {
+        "generate_summary": "Bạn là data analyst. Tóm tắt dữ liệu sau trong 2-3 câu ngắn gọn, súc tích. Chỉ nêu facts, không đưa ra nhận định.",
+        "generate_insights": "Phân tích dữ liệu và đưa ra 3-5 insights quan trọng nhất. Mỗi insight là một bullet point ngắn. Ưu tiên: (1) Giá trị cao/thấp nhất (2) Xu hướng (3) Điểm bất thường.",
+        "generate_conclusion": "Dựa trên dữ liệu và insights, viết kết luận ngắn gọn (2-3 câu) và 1-2 đề xuất hành động cụ thể.",
+        "suggest_charts": "Dựa trên các cột dữ liệu, đề xuất 2-3 loại biểu đồ phù hợp nhất. Trả về JSON với chart_type, x_column, y_column."
+    },
+    "error_codes": {
+        "REPORT_001": "Không đủ dữ liệu để tạo báo cáo (cần ít nhất 2 cột và 1 hàng)",
+        "REPORT_002": "Không có cột số để tạo biểu đồ",
+        "REPORT_003": "Lỗi khi tạo nội dung từ AI",
+        "REPORT_004": "Section không tồn tại",
+        "REPORT_005": "Định dạng xuất không hỗ trợ"
+    },
+    "example_flow": {
+        "step_1": {
+            "user_action": "Gõ 'Sinh báo cáo' trong input",
+            "system_response": "Hiển thị loading với message 'Đang phân tích dữ liệu...'"
+        },
+        "step_2": {
+            "user_action": "Chờ",
+            "system_response": "Gọi API generate_report với columns và data hiện tại"
+        },
+        "step_3": {
+            "user_action": "Xem báo cáo",
+            "system_response": "Hiển thị ReportView với các sections"
+        },
+        "step_4": {
+            "user_action": "Double-click vào section để sửa",
+            "system_response": "Mở SectionEditor với nội dung hiện tại"
+        },
+        "step_5": {
+            "user_action": "Click 'Tạo lại' trên một insight",
+            "system_response": "Gọi API regenerate_section, replace nội dung mới"
+        },
+        "step_6": {
+            "user_action": "Click 'Xuất PDF'",
+            "system_response": "Mở ExportModal, sau đó tải file"
+        }
+    }
+}
