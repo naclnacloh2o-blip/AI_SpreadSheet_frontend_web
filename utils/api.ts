@@ -6,7 +6,8 @@
  * - Intent execution
  */
 
-const API_BASE_URL = 'http://localhost:8000/api/v1';
+// Use environment variable for API URL (set in .env.local or Render env vars)
+const API_BASE_URL = `${(import.meta as any).env?.VITE_API_URL || process.env.VITE_API_URL || 'http://localhost:8000'}/api/v1`;
 
 // Types matching backend schemas
 export interface ColumnDef {
@@ -123,7 +124,8 @@ export async function processCommand(
  */
 export async function checkBackendHealth(): Promise<boolean> {
     try {
-        const response = await fetch('http://localhost:8000/health');
+        const baseUrl = (import.meta as any).env?.VITE_API_URL || process.env.VITE_API_URL || 'http://localhost:8000';
+        const response = await fetch(`${baseUrl}/health`);
         const data = await response.json();
         return data.status === 'healthy';
     } catch {

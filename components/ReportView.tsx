@@ -182,7 +182,8 @@ export const ReportView: React.FC<ReportViewProps> = ({ data, columns, onBack })
     const generateReport = async () => {
         setLoading(true);
         try {
-            const response = await fetch('http://localhost:8000/api/v1/report/generate', {
+            const baseUrl = (import.meta as any).env?.VITE_API_URL || process.env.VITE_API_URL || 'http://localhost:8000';
+            const response = await fetch(`${baseUrl}/api/v1/report/generate`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
