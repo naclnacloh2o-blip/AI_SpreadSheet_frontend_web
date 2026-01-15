@@ -53,7 +53,7 @@ export const parseCSV = (text: string): { columns: ColumnDef[], data: RowData[] 
     const columns: ColumnDef[] = headers.map((h, index) => ({
         id: `col_${index}`,
         label: h,
-        type: 'number' 
+        type: 'number'
     }));
 
     const data: RowData[] = lines.slice(1).map((line, idx) => {
@@ -94,7 +94,7 @@ export const evaluateFormula = (formula: string, row: RowData, columns: ColumnDe
     }
 };
 
-export type ParsedCommand = 
+export type ParsedCommand =
     | { type: 'DERIVED_COLUMN'; target: string; formula: string }
     | { type: 'ADD_COLUMN'; name: string }
     | { type: 'REMOVE_COLUMN'; name: string }
@@ -128,42 +128,66 @@ export const parseNaturalCommand = (input: string): ParsedCommand | null => {
         return { type: 'ADD_COLUMN', name: addColMatch[1].trim() };
     }
 
-    // 5. Derived Column (Existing Logic)
-    // Normalize Vietnamese operators to math symbols
-    let formulaInput = processedInput.toLowerCase();
-    
-    const replacements: Record<string, string> = {
-        'nhân': '*',
-        ' x ': '*',
-        'chia': '/',
-        'cộng': '+',
-        'trừ': '-',
-        'variance': 'calculateVariance', 
-        'phương sai': 'calculateVariance'
-    };
+    // 5. Derived Column - IMPROVED with NLP preprocessing
+    // Keep original case for formula parsing
+    let formulaInput = processedInput;
 
-    // Replace keywords
-    Object.keys(replacements).forEach(key => {
-        formulaInput = formulaInput.split(key).join(replacements[key]);
-    });
+    // Vietnamese/English operator replacements
+    const replacements: [RegExp, string][] = [
+        [/\btrừ\b/gi, ' - '],
+        [/\bcộng\b/gi, ' + '],
+        [/\bnhân\b/gi, ' * '],
+        [/\bchia\b/gi, ' / '],
+        [/\bminus\b/gi, ' - '],
+        [/\bplus\b/gi, ' + '],
+        [/\btimes\b/gi, ' * '],
+        [/\bdivided by\b/gi, ' / '],
+    ];
 
-    // Regex to find "Target = Expression"
-    // Supports: "Tạo cột Lương Thực = [Lương] * [Hệ Số]"
-    // Supports: "Lương Thực = [Lương] * 1.5"
+    // Regex to find "Target = Expression" - use original input for column name
     const assignRegex = /(?:tạo cột|tính)?\s*(.+?)\s*(?:bằng|=)\s+(.+)/i;
-    const match = formulaInput.match(assignRegex);
+    const match = processedInput.match(assignRegex);
 
     if (match) {
         const rawName = match[1].trim();
+        let rawFormula = match[2].trim();
+
+        // Apply Vietnamese operator replacements
+        replacements.forEach(([pattern, replacement]) => {
+            rawFormula = rawFormula.replace(pattern, replacement);
+        });
+
+        // Auto-wrap column references if not already wrapped
+        // Pattern: word that isn't a number, operator, or already in brackets
+        if (!rawFormula.includes('[')) {
+            // Split by operators but keep operators
+            const parts = rawFormula.split(/(\s*[+\-*/()]\s*)/);
+            rawFormula = parts.map(part => {
+                const trimmed = part.trim();
+                if (!trimmed) return part;
+                // Skip if it's an operator or number
+                if (/^[+\-*/()]+$/.test(trimmed)) return part;
+                if (/^[\d.]+$/.test(trimmed)) return part;
+                // It's a column name - wrap with []
+                // Capitalize first letter of each word
+                const label = trimmed.replace(/(^\w|\s\w)/g, m => m.toUpperCase());
+                return `[${label}]`;
+            }).join('');
+        }
+
+        // Clean up extra spaces
+        rawFormula = rawFormula.replace(/\s+/g, ' ').trim();
+
         // Capitalize words for nice Label
         const label = rawName.replace(/(^\w|\s\w)/g, m => m.toUpperCase());
-        
+
         return {
             type: 'DERIVED_COLUMN',
             target: label,
-            formula: match[2].trim()
+            formula: rawFormula
         };
     }
 
     return null;
 };
+
