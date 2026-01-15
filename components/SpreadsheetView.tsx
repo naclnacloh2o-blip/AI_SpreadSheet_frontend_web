@@ -103,12 +103,55 @@ export const SpreadsheetView: React.FC<SpreadsheetViewProps> = ({
                             Add Column
                         </button>
 
+                        {/* Delete Column Button with Dropdown */}
+                        <div className="relative group">
+                            <button
+                                className="flex items-center gap-1.5 px-3 py-1 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded text-xs font-bold transition-colors"
+                                title="Xóa cột"
+                            >
+                                <span className="material-symbols-outlined text-[16px]">delete</span>
+                                Delete Column
+                                <span className="material-symbols-outlined text-[14px]">expand_more</span>
+                            </button>
+                            {/* Dropdown Menu */}
+                            <div className="absolute top-full left-0 mt-1 bg-[#1e2a36] border border-border-dark rounded-lg shadow-xl z-50 min-w-[180px] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                                <div className="py-1 max-h-64 overflow-y-auto">
+                                    <div className="px-3 py-2 text-xs text-gray-500 border-b border-border-dark">
+                                        Chọn cột để xóa:
+                                    </div>
+                                    {columns.map((col) => (
+                                        <button
+                                            key={col.id}
+                                            onClick={() => {
+                                                if (confirm(`Bạn có chắc muốn xóa cột "${col.label}"?`)) {
+                                                    onExecuteCommand(`Xóa cột ${col.label}`);
+                                                }
+                                            }}
+                                            className="w-full px-3 py-2 text-left text-sm text-gray-300 hover:bg-red-500/20 hover:text-red-400 transition-colors flex items-center justify-between gap-2"
+                                        >
+                                            <span className="truncate">{col.label}</span>
+                                            {col.isComputed && (
+                                                <span className="text-[10px] px-1.5 py-0.5 bg-primary/20 text-primary rounded">
+                                                    Computed
+                                                </span>
+                                            )}
+                                        </button>
+                                    ))}
+                                    {columns.length === 0 && (
+                                        <div className="px-3 py-2 text-xs text-gray-500 italic">
+                                            Không có cột nào
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
                         <div className="h-4 w-[1px] bg-border-dark mx-2"></div>
                         <button className="p-1 hover:bg-[#233648] rounded text-gray-400">
                             <span className="material-symbols-outlined text-[18px]">undo</span>
                         </button>
                         <div className="h-4 w-[1px] bg-border-dark mx-2"></div>
-                        <span className="text-xs text-gray-500 italic">Try: "Profit = [Q1] - [Q2]" or "Sum of Q1"</span>
+                        <span className="text-xs text-gray-500 italic">Thử: "Profit = Revenue trừ Cost" hoặc "Tổng Q1"</span>
                     </div>
                 </div>
 
